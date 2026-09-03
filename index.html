@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BATTLEGUN - 로블록스 라이벌스 스타일 3D FPS</title>
+    <meta name="description" content="BATTLEGUN: 라이벌스(Rivals) 스타일 3D FPS 슈터게임. 레드팀 vs 블루팀 팀전 배틀!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- ========== 3D GAME CANVAS ========== -->
+<div id="game-container"></div>
+
+<!-- ========== 로그인 / 회원가입 모달 ========== -->
+<!-- ========== 로그인 / 회원가입 모달 (선택 사항) ========== -->
+<div id="auth-modal" class="overlay hidden">
+    <div class="auth-box glass-card">
+        <div class="logo-mini">
+            <span class="logo-text-bg">BATTLE</span><span class="logo-text-fg">GUN</span>
+        </div>
+        <p class="auth-tagline">라이벌스 스타일 팀 배틀에 오신 것을 환영합니다!</p>
+
+        <!-- 로그인 폼 -->
+        <div id="login-form">
+            <h2 class="auth-title">🔐 로그인</h2>
+            <input type="text" id="login-username" class="input-field" placeholder="아이디 (Username)">
+            <input type="password" id="login-password" class="input-field" placeholder="비밀번호 (Password)">
+            <p id="login-error" class="auth-error"></p>
+            <button id="btn-login" class="btn-primary btn-full">로그인</button>
+            <button id="btn-guest-play" class="btn-primary btn-full" style="margin-top:10px; background:linear-gradient(135deg,#00f3ff,#0088ff);">🎮 게스트로 바로 시작</button>
+            <p class="auth-switch">계정이 없으신가요? <span id="btn-show-register" class="link-text">회원가입</span></p>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div id="register-form" class="hidden">
+            <h2 class="auth-title">✨ 회원가입</h2>
+            <input type="text" id="reg-username" class="input-field" placeholder="아이디 (2글자 이상)">
+            <input type="password" id="reg-password" class="input-field" placeholder="비밀번호 (4자 이상)">
+            <input type="password" id="reg-confirm" class="input-field" placeholder="비밀번호 확인">
+            <p id="register-error" class="auth-error"></p>
+            <button id="btn-register" class="btn-primary btn-full">가입하기</button>
+            <p class="auth-switch">이미 계정이 있으신가요? <span id="btn-show-login" class="link-text">로그인</span></p>
+        </div>
+    </div>
+</div>
+
+
+<!-- 메인 메뉴 제거 (로비에서 선택) -->
+<div id="main-menu" class="overlay hidden">
+    <!-- UI 삭제 -->
+</div>
+
+<!-- ========== 3D 로비 오버레이 ========== -->
+<div id="lobby-overlay" class="overlay hidden">
+    <div class="lobby-header-bar" style="display:flex; align-items:center; justify-content:space-between; padding:16px 28px;">
+        <div class="lobby-logo" style="font-size:24px; font-weight:900; color:#00f3ff; text-shadow:0 0 12px #00f3ff;">BATTLEGUN <span style="font-size:14px; color:#ff00ff;">LOBBY</span></div>
+        
+        <!-- 중앙 상단 대형 PLAY 버튼 -->
+        <button onclick="openModeSelectMenu()" style="
+            padding: 12px 36px;
+            background: linear-gradient(135deg, #00f3ff, #ff00ff);
+            border: none; border-radius: 12px; cursor: pointer;
+            font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
+            color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 0 20px rgba(0,243,255,0.6), 0 0 40px rgba(255,0,255,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            letter-spacing: 2px;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
+            ⚔️ PLAY (매치 시작)
+        </button>
+
+
+        <div style="display:flex; align-items:center;">
+            <div id="lobby-user-info" class="user-badge" style="font-size:16px; margin-right: 16px;">🎮 PLAYER</div>
+            <button id="btn-logout-lobby" class="btn-logout">로그아웃</button>
+        </div>
+    </div>
+</div>
+<div id="lobby-hint" class="lobby-hint-box hidden">
+    <span>🎮 WASD: 이동 | 상단 [PLAY] 버튼 또는 중앙 발판에서 E 키를 눌러 매치 시작!</span>
+</div>
+
+
+<!-- ========== 모드 선택 메뉴 (Rivals 스타일 매치 선택) ========== -->
+<div id="mode-select-menu" class="hidden" style="
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(5,3,20,0.92); backdrop-filter:blur(16px);
+    display:none; flex-direction:column;
+    align-items:center; justify-content:center; z-index:9999;
+    font-family:'Orbitron',sans-serif;
+">
+    <div class="glass-card" style="
+        background:linear-gradient(135deg,rgba(0,243,255,0.1),rgba(255,0,200,0.1));
+        border:2px solid rgba(0,243,255,0.4); border-radius:24px;
+        padding:44px 52px; text-align:center; max-width:540px; width:92%;
+        box-shadow:0 0 80px rgba(0,243,255,0.3);
+    ">
+        <div style="font-size:38px; font-weight:900; color:#00f3ff;
+            text-shadow:0 0 24px #00f3ff; margin-bottom:6px; letter-spacing:4px;">
+            ⚔️ BATTLEGUN
+        </div>
+        <div style="font-size:15px; color:#bbb; margin-bottom:32px; font-family:'Inter',sans-serif;">
+            전투 모드를 선택하여 게임을 시작하세요!
+        </div>
+
+        <!-- 1대1 매치 -->
+        <button onclick="startGamePlay('solo','medium')" style="
+            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:14px;
+            background:linear-gradient(135deg,rgba(0,201,255,0.2),rgba(0,243,255,0.3));
+            border:2px solid #00f3ff; border-radius:14px; cursor:pointer;
+            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
+            color:#00f3ff; text-shadow:0 0 10px #00f3ff; letter-spacing:2px;
+            transition:all 0.2s; text-align:left;
+        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(0,201,255,0.35),rgba(0,243,255,0.5))'"
+           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(0,201,255,0.2),rgba(0,243,255,0.3))'">
+            <span style="font-size:32px; margin-right:16px;">⚡</span>
+            <div>
+                <div>1 vs 1 솔로 매치</div>
+                <div style="font-size:12px; color:#88eeff; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">1대1 단독 대결 (보스 봇 1명)</div>
+            </div>
+        </button>
+
+        <!-- 2대2 매치 -->
+        <button onclick="startGamePlay('team2v2','medium')" style="
+            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:14px;
+            background:linear-gradient(135deg,rgba(255,0,204,0.2),rgba(255,0,255,0.3));
+            border:2px solid #ff00ff; border-radius:14px; cursor:pointer;
+            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
+            color:#ff00ff; text-shadow:0 0 10px #ff00ff; letter-spacing:2px;
+            transition:all 0.2s; text-align:left;
+        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(255,0,204,0.35),rgba(255,0,255,0.5))'"
+           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(255,0,204,0.2),rgba(255,0,255,0.3))'">
+            <span style="font-size:32px; margin-right:16px;">🔥</span>
+            <div>
+                <div>2 vs 2 팀 매치</div>
+                <div style="font-size:12px; color:#ffaaff; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">아군 봇 1명과 협동 (적 봇 2명)</div>
+            </div>
+        </button>
+
+        <!-- 3대3 매치 -->
+        <button onclick="startGamePlay('team3v3','medium')" style="
+            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:24px;
+            background:linear-gradient(135deg,rgba(255,170,0,0.2),rgba(255,204,0,0.3));
+            border:2px solid #ffaa00; border-radius:14px; cursor:pointer;
+            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
+            color:#ffaa00; text-shadow:0 0 10px #ffaa00; letter-spacing:2px;
+            transition:all 0.2s; text-align:left;
+        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(255,170,0,0.35),rgba(255,204,0,0.5))'"
+           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(255,170,0,0.2),rgba(255,204,0,0.3))'">
+            <span style="font-size:32px; margin-right:16px;">💥</span>
+            <div>
+                <div>3 vs 3 풀팀 매치</div>
+                <div style="font-size:12px; color:#ffddaa; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">아군 봇 2명과 대규모 팀전 (적 봇 3명)</div>
+            </div>
+        </button>
+
+        <button onclick="closeModeSelectMenu();" style="
+            padding:10px 28px; background:transparent; border:1px solid #666;
+            border-radius:10px; cursor:pointer; font-family:'Inter',sans-serif;
+            font-size:14px; color:#aaa; transition:all 0.2s;
+        " onmouseover="this.style.color='#fff';this.style.borderColor='#aaa'"
+           onmouseout="this.style.color='#aaa';this.style.borderColor='#666'">
+            ← 로비로 돌아가기
+        </button>
+    </div>
+</div>
+
+
+
+
+<!-- ========== 로비 채팅 박스 ========== -->
+<div id="lobby-chat" class="hidden" style="
+    position:fixed; bottom:80px; left:20px; width:340px; max-height:200px;
+    background:rgba(0,0,0,0.55); border:1px solid rgba(0,243,255,0.2);
+    border-radius:12px; padding:10px 14px; overflow-y:auto;
+    font-family:'Inter',sans-serif; font-size:13px; color:#e0e0e0;
+    z-index:800; pointer-events:none;
+">
+    <div id="chat-messages"></div>
+</div>
+
+<!-- ========== HUD (인게임 오버레이) ========== -->
+<div id="hud-overlay" class="hidden">
+    <!-- 상단 팀 스코어 -->
+    <div id="score-bar">
+        <div class="team-score blue-score">
+            <div class="team-label">🔵 블루팀</div>
+            <div id="player-score" class="score-num cyan">0</div>
+        </div>
+        <div class="timer-wrap">
+            <div id="match-timer" class="match-timer">03:00</div>
+            <div id="match-mode-label" class="mode-label">🔵 BLUE TEAM vs RED TEAM 🔴</div>
+        </div>
+        <div class="team-score red-score">
+            <div class="team-label">🔴 레드팀</div>
+            <div id="bot-score" class="score-num red">0</div>
+        </div>
+    </div>
+
+    <!-- 킬피드 -->
+    <div id="kill-feed"></div>
+
+    <!-- 크로스헤어 -->
+    <div id="crosshair">
+        <div class="ch-line ch-top"></div>
+        <div class="ch-line ch-bottom"></div>
+        <div class="ch-line ch-left"></div>
+        <div class="ch-line ch-right"></div>
+        <div class="ch-dot"></div>
+    </div>
+
+    <!-- 히트마커 -->
+    <div id="hitmarker" class="hidden">✕</div>
+
+    <!-- 스나이퍼 스코프 -->
+    <div id="scope-overlay" class="hidden">
+        <div class="scope-h"></div>
+        <div class="scope-v"></div>
+        <div class="scope-circle"></div>
+    </div>
+
+    <!-- 이동 상태 -->
+    <div id="movement-state" class="hidden"></div>
+
+    <!-- 데미지 숫자 컨테이너 -->
+    <div id="damage-container"></div>
+
+    <!-- 하단 HUD -->
+    <div id="hud-bottom">
+        <!-- 체력/실드 -->
+        <div class="health-panel">
+            <div class="bar-row">
+                <div class="bar-icon shield-icon">🛡</div>
+                <div class="bar-wrap shield-bar-wrap">
+                    <div id="shield-bar-fill" class="bar-fill shield-fill" style="width:100%"></div>
+                </div>
+                <span id="shield-val" class="bar-val">50</span>
+            </div>
+            <div class="bar-row">
+                <div class="bar-icon hp-icon">❤️</div>
+                <div class="bar-wrap">
+                    <div id="health-bar-fill" class="bar-fill hp-fill" style="width:100%"></div>
+                </div>
+                <span id="health-val" class="bar-val">100</span>
+            </div>
+        </div>
+
+        <!-- 무기 슬롯 -->
+        <div id="weapon-slots">
+            <div class="slot" id="slot-1">
+                <span class="slot-name">샷건</span>
+                <span class="slot-num">1</span>
+            </div>
+            <div class="slot" id="slot-2">
+                <span class="slot-name">권총</span>
+                <span class="slot-num">2</span>
+            </div>
+            <div class="slot active" id="slot-3">
+                <span class="slot-name">소총</span>
+                <span class="slot-num">3</span>
+            </div>
+            <div class="slot" id="slot-4">
+                <span class="slot-name">스나이퍼</span>
+                <span class="slot-num">4</span>
+            </div>
+        </div>
+
+        <!-- 탄약 -->
+        <div class="ammo-panel">
+            <span id="ammo-current" class="ammo-cur">30</span>
+            <span class="ammo-sep">/</span>
+            <span id="ammo-max" class="ammo-res">90</span>
+            <div id="reload-indicator" class="reload-ind hidden">🔄 재장전 중...</div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 게임 오버 모달 ========== -->
+<div id="gameover-modal" class="overlay hidden">
+    <div class="gameover-box glass-card">
+        <div id="match-result-title" class="result-title">🔵 BLUE TEAM WIN!</div>
+        <div id="match-result-subtitle" class="result-sub">블루팀 승리!</div>
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-label">킬</div><div id="stat-kills" class="stat-val cyan">0</div></div>
+            <div class="stat-item"><div class="stat-label">데스</div><div id="stat-deaths" class="stat-val red">0</div></div>
+            <div class="stat-item"><div class="stat-label">K/D</div><div id="stat-kd" class="stat-val amber">0.00</div></div>
+            <div class="stat-item"><div class="stat-label">총 데미지</div><div id="stat-damage" class="stat-val green">0</div></div>
+        </div>
+        <div class="gameover-buttons">
+            <button id="btn-rematch" class="btn-primary">🔁 재경기</button>
+            <button id="btn-back-menu" class="btn-secondary">🏠 메뉴로</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 일시정지 메뉴 ========== -->
+<div id="pause-menu" class="overlay hidden">
+    <div class="pause-box glass-card">
+        <h2 class="pause-title">⏸ 일시정지</h2>
+        <button id="btn-resume" class="btn-primary btn-full">▶ 계속하기</button>
+        <button id="btn-quit-to-menu" class="btn-secondary btn-full" style="margin-top:12px">🏠 메뉴로 나가기</button>
+    </div>
+</div>
+
+<!-- ========== SCRIPTS ========== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/engine/AudioManager.js"></script>
+<script src="js/engine/Renderer.js"></script>
+<script src="js/game/Map.js"></script>
+<script src="js/game/Weapon.js"></script>
+<script src="js/game/Player.js"></script>
+<script src="js/game/Bot.js"></script>
+<script src="js/game/GameMatch.js"></script>
+<script src="js/ui/HUD.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
