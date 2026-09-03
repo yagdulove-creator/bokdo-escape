@@ -2,319 +2,255 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BATTLEGUN - 로블록스 라이벌스 스타일 3D FPS</title>
-    <meta name="description" content="BATTLEGUN: 라이벌스(Rivals) 스타일 3D FPS 슈터게임. 레드팀 vs 블루팀 팀전 배틀!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>복도탈출 (Hallway Escape) - 2D Retro Pixel Runner</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Google Fonts for retro arcade aesthetic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DungGeunMo&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- ========== 3D GAME CANVAS ========== -->
-<div id="game-container"></div>
-
-<!-- ========== 로그인 / 회원가입 모달 ========== -->
-<!-- ========== 로그인 / 회원가입 모달 (선택 사항) ========== -->
-<div id="auth-modal" class="overlay hidden">
-    <div class="auth-box glass-card">
-        <div class="logo-mini">
-            <span class="logo-text-bg">BATTLE</span><span class="logo-text-fg">GUN</span>
-        </div>
-        <p class="auth-tagline">라이벌스 스타일 팀 배틀에 오신 것을 환영합니다!</p>
-
-        <!-- 로그인 폼 -->
-        <div id="login-form">
-            <h2 class="auth-title">🔐 로그인</h2>
-            <input type="text" id="login-username" class="input-field" placeholder="아이디 (Username)">
-            <input type="password" id="login-password" class="input-field" placeholder="비밀번호 (Password)">
-            <p id="login-error" class="auth-error"></p>
-            <button id="btn-login" class="btn-primary btn-full">로그인</button>
-            <button id="btn-guest-play" class="btn-primary btn-full" style="margin-top:10px; background:linear-gradient(135deg,#00f3ff,#0088ff);">🎮 게스트로 바로 시작</button>
-            <p class="auth-switch">계정이 없으신가요? <span id="btn-show-register" class="link-text">회원가입</span></p>
-        </div>
-
-        <!-- 회원가입 폼 -->
-        <div id="register-form" class="hidden">
-            <h2 class="auth-title">✨ 회원가입</h2>
-            <input type="text" id="reg-username" class="input-field" placeholder="아이디 (2글자 이상)">
-            <input type="password" id="reg-password" class="input-field" placeholder="비밀번호 (4자 이상)">
-            <input type="password" id="reg-confirm" class="input-field" placeholder="비밀번호 확인">
-            <p id="register-error" class="auth-error"></p>
-            <button id="btn-register" class="btn-primary btn-full">가입하기</button>
-            <p class="auth-switch">이미 계정이 있으신가요? <span id="btn-show-login" class="link-text">로그인</span></p>
-        </div>
-    </div>
-</div>
-
-
-<!-- 메인 메뉴 제거 (로비에서 선택) -->
-<div id="main-menu" class="overlay hidden">
-    <!-- UI 삭제 -->
-</div>
-
-<!-- ========== 3D 로비 오버레이 ========== -->
-<div id="lobby-overlay" class="overlay hidden">
-    <div class="lobby-header-bar" style="display:flex; align-items:center; justify-content:space-between; padding:16px 28px;">
-        <div class="lobby-logo" style="font-size:24px; font-weight:900; color:#00f3ff; text-shadow:0 0 12px #00f3ff;">BATTLEGUN <span style="font-size:14px; color:#ff00ff;">LOBBY</span></div>
+    <div id="game-container">
+        <!-- Main Render Canvas -->
+        <canvas id="game-canvas" width="960" height="540"></canvas>
         
-        <!-- 중앙 상단 대형 PLAY 버튼 -->
-        <button onclick="openModeSelectMenu()" style="
-            padding: 12px 36px;
-            background: linear-gradient(135deg, #00f3ff, #ff00ff);
-            border: none; border-radius: 12px; cursor: pointer;
-            font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900;
-            color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            box-shadow: 0 0 20px rgba(0,243,255,0.6), 0 0 40px rgba(255,0,255,0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-            letter-spacing: 2px;
-        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
-            ⚔️ PLAY (매치 시작)
-        </button>
-
-
-        <div style="display:flex; align-items:center;">
-            <div id="lobby-user-info" class="user-badge" style="font-size:16px; margin-right: 16px;">🎮 PLAYER</div>
-            <button id="btn-logout-lobby" class="btn-logout">로그아웃</button>
-        </div>
-    </div>
-</div>
-<div id="lobby-hint" class="lobby-hint-box hidden">
-    <span>🎮 WASD: 이동 | 상단 [PLAY] 버튼 또는 중앙 발판에서 E 키를 눌러 매치 시작!</span>
-</div>
-
-
-<!-- ========== 모드 선택 메뉴 (Rivals 스타일 매치 선택) ========== -->
-<div id="mode-select-menu" class="hidden" style="
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(5,3,20,0.92); backdrop-filter:blur(16px);
-    display:none; flex-direction:column;
-    align-items:center; justify-content:center; z-index:9999;
-    font-family:'Orbitron',sans-serif;
-">
-    <div class="glass-card" style="
-        background:linear-gradient(135deg,rgba(0,243,255,0.1),rgba(255,0,200,0.1));
-        border:2px solid rgba(0,243,255,0.4); border-radius:24px;
-        padding:44px 52px; text-align:center; max-width:540px; width:92%;
-        box-shadow:0 0 80px rgba(0,243,255,0.3);
-    ">
-        <div style="font-size:38px; font-weight:900; color:#00f3ff;
-            text-shadow:0 0 24px #00f3ff; margin-bottom:6px; letter-spacing:4px;">
-            ⚔️ BATTLEGUN
-        </div>
-        <div style="font-size:15px; color:#bbb; margin-bottom:32px; font-family:'Inter',sans-serif;">
-            전투 모드를 선택하여 게임을 시작하세요!
-        </div>
-
-        <!-- 1대1 매치 -->
-        <button onclick="startGamePlay('solo','medium')" style="
-            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:14px;
-            background:linear-gradient(135deg,rgba(0,201,255,0.2),rgba(0,243,255,0.3));
-            border:2px solid #00f3ff; border-radius:14px; cursor:pointer;
-            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
-            color:#00f3ff; text-shadow:0 0 10px #00f3ff; letter-spacing:2px;
-            transition:all 0.2s; text-align:left;
-        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(0,201,255,0.35),rgba(0,243,255,0.5))'"
-           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(0,201,255,0.2),rgba(0,243,255,0.3))'">
-            <span style="font-size:32px; margin-right:16px;">⚡</span>
-            <div>
-                <div>1 vs 1 솔로 매치</div>
-                <div style="font-size:12px; color:#88eeff; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">1대1 단독 대결 (보스 봇 1명)</div>
-            </div>
-        </button>
-
-        <!-- 2대2 매치 -->
-        <button onclick="startGamePlay('team2v2','medium')" style="
-            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:14px;
-            background:linear-gradient(135deg,rgba(255,0,204,0.2),rgba(255,0,255,0.3));
-            border:2px solid #ff00ff; border-radius:14px; cursor:pointer;
-            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
-            color:#ff00ff; text-shadow:0 0 10px #ff00ff; letter-spacing:2px;
-            transition:all 0.2s; text-align:left;
-        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(255,0,204,0.35),rgba(255,0,255,0.5))'"
-           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(255,0,204,0.2),rgba(255,0,255,0.3))'">
-            <span style="font-size:32px; margin-right:16px;">🔥</span>
-            <div>
-                <div>2 vs 2 팀 매치</div>
-                <div style="font-size:12px; color:#ffaaff; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">아군 봇 1명과 협동 (적 봇 2명)</div>
-            </div>
-        </button>
-
-        <!-- 3대3 매치 -->
-        <button onclick="startGamePlay('team3v3','medium')" style="
-            display:flex; align-items:center; width:100%; padding:18px 24px; margin-bottom:24px;
-            background:linear-gradient(135deg,rgba(255,170,0,0.2),rgba(255,204,0,0.3));
-            border:2px solid #ffaa00; border-radius:14px; cursor:pointer;
-            font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700;
-            color:#ffaa00; text-shadow:0 0 10px #ffaa00; letter-spacing:2px;
-            transition:all 0.2s; text-align:left;
-        " onmouseover="this.style.transform='scale(1.02)';this.style.background='linear-gradient(135deg,rgba(255,170,0,0.35),rgba(255,204,0,0.5))'"
-           onmouseout="this.style.transform='scale(1.0)';this.style.background='linear-gradient(135deg,rgba(255,170,0,0.2),rgba(255,204,0,0.3))'">
-            <span style="font-size:32px; margin-right:16px;">💥</span>
-            <div>
-                <div>3 vs 3 풀팀 매치</div>
-                <div style="font-size:12px; color:#ffddaa; font-family:'Inter',sans-serif; font-weight:400; margin-top:2px;">아군 봇 2명과 대규모 팀전 (적 봇 3명)</div>
-            </div>
-        </button>
-
-        <button onclick="closeModeSelectMenu();" style="
-            padding:10px 28px; background:transparent; border:1px solid #666;
-            border-radius:10px; cursor:pointer; font-family:'Inter',sans-serif;
-            font-size:14px; color:#aaa; transition:all 0.2s;
-        " onmouseover="this.style.color='#fff';this.style.borderColor='#aaa'"
-           onmouseout="this.style.color='#aaa';this.style.borderColor='#666'">
-            ← 로비로 돌아가기
-        </button>
-    </div>
-</div>
-
-
-
-
-<!-- ========== 로비 채팅 박스 ========== -->
-<div id="lobby-chat" class="hidden" style="
-    position:fixed; bottom:80px; left:20px; width:340px; max-height:200px;
-    background:rgba(0,0,0,0.55); border:1px solid rgba(0,243,255,0.2);
-    border-radius:12px; padding:10px 14px; overflow-y:auto;
-    font-family:'Inter',sans-serif; font-size:13px; color:#e0e0e0;
-    z-index:800; pointer-events:none;
-">
-    <div id="chat-messages"></div>
-</div>
-
-<!-- ========== HUD (인게임 오버레이) ========== -->
-<div id="hud-overlay" class="hidden">
-    <!-- 상단 팀 스코어 -->
-    <div id="score-bar">
-        <div class="team-score blue-score">
-            <div class="team-label">🔵 블루팀</div>
-            <div id="player-score" class="score-num cyan">0</div>
-        </div>
-        <div class="timer-wrap">
-            <div id="match-timer" class="match-timer">03:00</div>
-            <div id="match-mode-label" class="mode-label">🔵 BLUE TEAM vs RED TEAM 🔴</div>
-        </div>
-        <div class="team-score red-score">
-            <div class="team-label">🔴 레드팀</div>
-            <div id="bot-score" class="score-num red">0</div>
-        </div>
-    </div>
-
-    <!-- 킬피드 -->
-    <div id="kill-feed"></div>
-
-    <!-- 크로스헤어 -->
-    <div id="crosshair">
-        <div class="ch-line ch-top"></div>
-        <div class="ch-line ch-bottom"></div>
-        <div class="ch-line ch-left"></div>
-        <div class="ch-line ch-right"></div>
-        <div class="ch-dot"></div>
-    </div>
-
-    <!-- 히트마커 -->
-    <div id="hitmarker" class="hidden">✕</div>
-
-    <!-- 스나이퍼 스코프 -->
-    <div id="scope-overlay" class="hidden">
-        <div class="scope-h"></div>
-        <div class="scope-v"></div>
-        <div class="scope-circle"></div>
-    </div>
-
-    <!-- 이동 상태 -->
-    <div id="movement-state" class="hidden"></div>
-
-    <!-- 데미지 숫자 컨테이너 -->
-    <div id="damage-container"></div>
-
-    <!-- 하단 HUD -->
-    <div id="hud-bottom">
-        <!-- 체력/실드 -->
-        <div class="health-panel">
-            <div class="bar-row">
-                <div class="bar-icon shield-icon">🛡</div>
-                <div class="bar-wrap shield-bar-wrap">
-                    <div id="shield-bar-fill" class="bar-fill shield-fill" style="width:100%"></div>
+        <!-- CRT Overlay Filter (Off by default for bright morning view) -->
+        <div id="crt-overlay"></div>
+        
+        <!-- UI Overlay Layer -->
+        <div id="ui-layer">
+            <!-- HUD Panel (Top) -->
+            <div id="hud-panel" class="hidden">
+                <div class="hud-item stage-badge">
+                    <span class="hud-label">STAGE</span>
+                    <span id="hud-stage-val">1-1</span>
                 </div>
-                <span id="shield-val" class="bar-val">50</span>
-            </div>
-            <div class="bar-row">
-                <div class="bar-icon hp-icon">❤️</div>
-                <div class="bar-wrap">
-                    <div id="health-bar-fill" class="bar-fill hp-fill" style="width:100%"></div>
+                
+                <div class="hud-item progress-bar-container">
+                    <div class="hud-label">안전구역까지 <span id="hud-distance-text">100m</span></div>
+                    <div class="progress-track">
+                        <div id="hud-monster-icon" class="track-icon monster-icon">👹</div>
+                        <div id="hud-player-icon" class="track-icon player-icon">🏃</div>
+                        <div id="hud-goal-icon" class="track-icon goal-icon">🚪</div>
+                        <div id="hud-progress-fill"></div>
+                    </div>
                 </div>
-                <span id="health-val" class="bar-val">100</span>
-            </div>
-        </div>
 
-        <!-- 무기 슬롯 -->
-        <div id="weapon-slots">
-            <div class="slot" id="slot-1">
-                <span class="slot-name">샷건</span>
-                <span class="slot-num">1</span>
-            </div>
-            <div class="slot" id="slot-2">
-                <span class="slot-name">권총</span>
-                <span class="slot-num">2</span>
-            </div>
-            <div class="slot active" id="slot-3">
-                <span class="slot-name">소총</span>
-                <span class="slot-num">3</span>
-            </div>
-            <div class="slot" id="slot-4">
-                <span class="slot-name">스나이퍼</span>
-                <span class="slot-num">4</span>
-            </div>
-        </div>
+                <div class="hud-item stamina-container">
+                    <div class="hud-label">체력 (STAMINA)</div>
+                    <div class="stamina-bar">
+                        <div id="hud-stamina-fill"></div>
+                    </div>
+                </div>
 
-        <!-- 탄약 -->
-        <div class="ammo-panel">
-            <span id="ammo-current" class="ammo-cur">30</span>
-            <span class="ammo-sep">/</span>
-            <span id="ammo-max" class="ammo-res">90</span>
-            <div id="reload-indicator" class="reload-ind hidden">🔄 재장전 중...</div>
-        </div>
-    </div>
-</div>
+                <div class="hud-item score-badge">
+                    <span class="hud-label">SCORE</span>
+                    <span id="hud-score-val">00000</span>
+                </div>
+            </div>
 
-<!-- ========== 게임 오버 모달 ========== -->
-<div id="gameover-modal" class="overlay hidden">
-    <div class="gameover-box glass-card">
-        <div id="match-result-title" class="result-title">🔵 BLUE TEAM WIN!</div>
-        <div id="match-result-subtitle" class="result-sub">블루팀 승리!</div>
-        <div class="stats-grid">
-            <div class="stat-item"><div class="stat-label">킬</div><div id="stat-kills" class="stat-val cyan">0</div></div>
-            <div class="stat-item"><div class="stat-label">데스</div><div id="stat-deaths" class="stat-val red">0</div></div>
-            <div class="stat-item"><div class="stat-label">K/D</div><div id="stat-kd" class="stat-val amber">0.00</div></div>
-            <div class="stat-item"><div class="stat-label">총 데미지</div><div id="stat-damage" class="stat-val green">0</div></div>
-        </div>
-        <div class="gameover-buttons">
-            <button id="btn-rematch" class="btn-primary">🔁 재경기</button>
-            <button id="btn-back-menu" class="btn-secondary">🏠 메뉴로</button>
-        </div>
-    </div>
-</div>
+            <!-- Monster Proximity Red Vignette Alert -->
+            <div id="monster-warning-vignette"></div>
+            <div id="warning-flash-text" class="hidden">괴물이 다가옵니다!</div>
 
-<!-- ========== 일시정지 메뉴 ========== -->
-<div id="pause-menu" class="overlay hidden">
-    <div class="pause-box glass-card">
-        <h2 class="pause-title">⏸ 일시정지</h2>
-        <button id="btn-resume" class="btn-primary btn-full">▶ 계속하기</button>
-        <button id="btn-quit-to-menu" class="btn-secondary btn-full" style="margin-top:12px">🏠 메뉴로 나가기</button>
-    </div>
-</div>
+            <!-- Start Menu Screen -->
+            <div id="screen-menu" class="screen-modal active">
+                <div class="retro-title-box">
+                    <h1 class="game-title">복도탈출</h1>
+                    <p class="game-subtitle">RETRO SCHOOL HALLWAY ESCAPE</p>
+                </div>
+                
+                <div class="menu-decor">
+                    <div class="pixel-art-preview"></div>
+                </div>
 
-<!-- ========== SCRIPTS ========== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/engine/AudioManager.js"></script>
-<script src="js/engine/Renderer.js"></script>
-<script src="js/game/Map.js"></script>
-<script src="js/game/Weapon.js"></script>
-<script src="js/game/Player.js"></script>
-<script src="js/game/Bot.js"></script>
-<script src="js/game/GameMatch.js"></script>
-<script src="js/ui/HUD.js"></script>
-<script src="js/main.js"></script>
+                <div class="menu-actions">
+                    <button id="btn-start" class="retro-btn primary">게임 시작 (START)</button>
+                    <button id="btn-how-to" class="retro-btn">조작 방법 (CONTROLS)</button>
+                    <button id="btn-audio-toggle" class="retro-btn">사운드: ON</button>
+                    <button id="btn-crt-toggle" class="retro-btn">CRT 효과: OFF</button>
+                </div>
+
+                <div class="game-description">
+                    <p>🏃 상쾌한 아침 학교 복도를 질주하세요!</p>
+                    <p>👹 뒤에서 쫓아오는 괴물을 피해 의자와 책상을 뛰어넘으세요!</p>
+                    <p>🚪 각 스테이지 끝의 <span>안전구역</span>에 무사히 도착해야 합니다!</p>
+                </div>
+            </div>
+
+            <!-- Controls Guide Modal -->
+            <div id="screen-howto" class="screen-modal hidden">
+                <div class="modal-box">
+                    <h2>조작 가이드</h2>
+                    <div class="controls-grid">
+                        <div class="key-row">
+                            <span class="key-cap">SPACE</span> / <span class="key-cap">↑</span> / <span class="key-cap">W</span>
+                            <span class="key-desc">점프 (책상, 의자 넘기)</span>
+                        </div>
+                        <div class="key-row">
+                            <span class="key-cap">↓</span> / <span class="key-cap">S</span>
+                            <span class="key-desc">슬라이딩 / 빠르게 내려오기</span>
+                        </div>
+                        <div class="key-row">
+                            <span class="key-cap">←</span> / <span class="key-cap">→</span> (<span class="key-cap">A</span>/<span class="key-cap">D</span>)
+                            <span class="key-desc">속도 조절 (달리기 감속/가속)</span>
+                        </div>
+                        <div class="key-row">
+                            <span class="key-cap">SHIFT</span>
+                            <span class="key-desc">대시 / 전력질주 (체력 소모)</span>
+                        </div>
+                    </div>
+                    <div class="tips-box">
+                        <p>💡 <strong>팁:</strong> 장애물에 부딪히면 속도가 느려져 괴물에게 쉽게 잡힙니다!</p>
+                        <p>💡 <strong>팁:</strong> 복도 바닥의 우유/음료수를 먹으면 체력과 대시가 회복됩니다!</p>
+                    </div>
+                    <button id="btn-back-menu" class="retro-btn">메뉴로 돌아가기</button>
+                </div>
+            </div>
+
+            <!-- Safe Zone Intermission Screen -->
+            <div id="screen-safezone" class="screen-modal hidden">
+                <div class="modal-box safezone-box">
+                    <div class="safezone-header">
+                        <span class="safe-badge">🏁 MARATHON RECOVERY ZONE 🏁</span>
+                        <h2>마라톤 급수·휴식 구역 도착!</h2>
+                        <p>수분과 에너지를 충전하세요! 괴물이 이 휴식 구역 안으로는 들어올 수 없습니다.</p>
+                    </div>
+
+                    <div class="stats-summary">
+                        <div class="stat-item">클리어 스테이지: <span id="safe-stage-num">Stage 1</span></div>
+                        <div class="stat-item">획득 점수: <span id="safe-score-num">1,200</span></div>
+                        <div class="stat-item">보너스 코인: <span id="safe-coin-num">🪙 50</span></div>
+                    </div>
+
+                    <div class="shop-section">
+                        <h3>마라톤 급수대 / 리커버리 매점</h3>
+                        <div class="shop-items">
+                            <div class="shop-item" id="shop-shoes">
+                                <div class="item-icon">👟</div>
+                                <div class="item-info">
+                                    <div class="item-name">신발 강화</div>
+                                    <div class="item-desc">기본 이동 속도 +10%</div>
+                                </div>
+                                <button class="retro-btn buy-btn" data-item="shoes" data-cost="50">50 코인</button>
+                            </div>
+                            <div class="shop-item" id="shop-drink">
+                                <div class="item-icon">🥤</div>
+                                <div class="item-info">
+                                    <div class="item-name">이온음료 드링킹</div>
+                                    <div class="item-desc">최대 체력 증가 및 완전 회복</div>
+                                </div>
+                                <button class="retro-btn buy-btn" data-item="drink" data-cost="40">40 코인</button>
+                            </div>
+                            <div class="shop-item" id="shop-flashlight">
+                                <div class="item-icon">🔦</div>
+                                <div class="item-info">
+                                    <div class="item-name">섬광탄</div>
+                                    <div class="item-desc">괴물을 3초간 일시 경악 (1회용)</div>
+                                </div>
+                                <button class="retro-btn buy-btn" data-item="flash" data-cost="60">60 코인</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btn-next-stage" class="retro-btn primary glow">다음 스테이지로 진입</button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="screen-gameover" class="screen-modal hidden">
+                <div class="modal-box gameover-box">
+                    <h1 class="gameover-title">GAME OVER</h1>
+                    <p class="gameover-sub">괴물에게 잡혔습니다...</p>
+
+                    <div class="final-score-card">
+                        <div class="score-line">최종 도달: <span id="final-stage">Stage 1-3</span></div>
+                        <div class="score-line">최종 점수: <span id="final-score">0</span></div>
+                        <div class="score-line">피한 장애물: <span id="final-dodged">0개</span></div>
+                    </div>
+
+                    <div class="gameover-actions">
+                        <button id="btn-retry" class="retro-btn primary">다시 시도 (RETRY)</button>
+                        <button id="btn-menu" class="retro-btn">메인 메뉴 (MENU)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile / Touch Controls Overlay - Jump Only -->
+            <div id="touch-controls">
+                <button id="touch-jump-btn" class="touch-btn action-btn primary-touch jump-only-btn">▲ 점프</button>
+            </div>
+            <!-- STAGE 1 CLEAR: Game World Warp Error Dialog -->
+            <div id="screen-game-warp" class="screen-modal hidden">
+                <!-- Fake OS Error Window -->
+                <div class="os-error-window">
+                    <div class="os-title-bar">
+                        <span class="os-title-icon">⚠️</span>
+                        <span class="os-title-text">시스템 경고 - SYSTEM WARNING</span>
+                        <div class="os-title-btns">
+                            <span class="os-win-btn">_</span>
+                            <span class="os-win-btn">□</span>
+                            <span class="os-win-btn close-btn">✕</span>
+                        </div>
+                    </div>
+                    <div class="os-body">
+                        <div class="os-icon-row">
+                            <div class="os-warn-icon">⚠</div>
+                            <div class="os-message">
+                                <p class="os-msg-main">게임속으로 들어가시겠습니까?</p>
+                                <p class="os-msg-sub">경고: 이 작업은 되돌릴 수 없습니다.<br>현실로 돌아오지 못할 수 있습니다.</p>
+                                <p class="os-msg-code">오류 코드: 0x0000GAME_DIVE_INITIATED</p>
+                            </div>
+                        </div>
+                        <div class="os-btn-row">
+                            <button id="btn-warp-yes" class="os-btn os-btn-yes">예 (Y)</button>
+                            <button id="btn-warp-no" class="os-btn os-btn-no">아니요 (N)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VORTEX / Sucked In Screen -->
+            <div id="screen-vortex" class="screen-modal hidden">
+                <div class="vortex-container">
+                    <div class="vortex-spiral" id="vortex-spiral"></div>
+                    <div class="vortex-rings">
+                        <div class="vortex-ring ring-1"></div>
+                        <div class="vortex-ring ring-2"></div>
+                        <div class="vortex-ring ring-3"></div>
+                        <div class="vortex-ring ring-4"></div>
+                        <div class="vortex-ring ring-5"></div>
+                    </div>
+                    <p class="vortex-text" id="vortex-text">게임 세계로 진입 중...</p>
+                </div>
+            </div>
+
+            <!-- Recording Start Screen -->
+            <div id="screen-recording" class="screen-modal hidden">
+                <div class="recording-box">
+                    <div class="rec-indicator">🔴 REC</div>
+                    <h1 class="rec-main-text">여기서 부터<br>영상 찍어야 함</h1>
+                    <p class="rec-sub-text">— 복도탈출 게임 세계 진입 완료 —</p>
+                    <button id="btn-rec-continue" class="retro-btn primary glow rec-continue-btn">계속 진행하기 ▶</button>
+                </div>
+            </div>
+
+        </div> <!-- /ui-layer -->
+    </div> <!-- /game-container -->
+
+    <!-- Game Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/graphics.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Monster.js"></script>
+    <script src="js/entities/Obstacle.js"></script>
+    <script src="js/systems/Map.js"></script>
+    <script src="js/systems/Physics.js"></script>
+    <script src="js/systems/UI.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
