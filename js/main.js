@@ -24,7 +24,7 @@ class Game {
         this.dodgedObstacles = 0;
         this.flashbangCount = 0;
 
-        // Projectile Shooting & Charging & Minions
+        // Projectile Shooting & Charging & Minions & AutoFire
         this.arrows = [];
         this.fireballs = [];
         this.minions = [];
@@ -33,6 +33,7 @@ class Game {
         this.chargeFrames = 0;
         this.chargeTargetX = 0;
         this.chargeTargetY = 0;
+        this.autoFireEnabled = false; // Mobile Auto Bow Fire Toggle
 
         // Camera Scroll
         this.scrollX = 0;
@@ -239,6 +240,22 @@ class Game {
             }
         });
 
+        const btnAutoFire = document.getElementById('btn-autofire-toggle');
+        if (btnAutoFire) {
+            btnAutoFire.addEventListener('click', (e) => {
+                this.autoFireEnabled = !this.autoFireEnabled;
+                e.target.textContent = `🏹 모바일 활 자동 발사: ${this.autoFireEnabled ? 'ON' : 'OFF'}`;
+                if (this.autoFireEnabled) {
+                    e.target.style.borderColor = '#eab308';
+                    e.target.style.color = '#fef08a';
+                } else {
+                    e.target.style.borderColor = '#64748b';
+                    e.target.style.color = '#ffffff';
+                }
+                audioEngine.playItemPickup();
+            });
+        }
+
         document.getElementById('btn-retry').addEventListener('click', () => {
             audioEngine.init();
             this.startGame();
@@ -278,9 +295,19 @@ class Game {
         this.isCharging = false;
         this.chargeFrames = 0;
 
+        // Mobile device detection (User Agent & Touch capability)
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+
         this.player.reset(120, this.map.groundY - 54);
+        if (this.isMobile) {
+            // Lower player & monster speed by 25% on mobile for comfortable touch control
+            this.player.baseSpeed = 3.15; // standard PC default is 4.2
+        } else {
+            this.player.baseSpeed = 4.2;
+        }
+
         this.player.setBow(this.difficulty === 'NORMAL' || this.difficulty === 'HARD');
-        this.monster.reset(350, 1.0 + (stageNum - 1) * 0.10, this.difficulty);
+        this.monster.reset(350, 1.0 + (stageNum - 1) * 0.10, this.difficulty, this.isMobile);
 
         this.scrollX = 0;
         this.state = 'PLAYING';
@@ -327,6 +354,14 @@ class Game {
 
         // 0. Update Shoot Cooldown & Projectiles (Arrows)
         if (this.shootCooldown > 0) this.shootCooldown--;
+
+        // Auto Fire Bow (No charging, fires standard arrow at monster every cooldown)
+        if (this.autoFireEnabled && this.player.hasBow && this.shootCooldown <= 0 && !this.monster.isDefeated) {
+            const monsterWorldX = this.player.x - this.monster.distanceFromPlayer;
+            const monsterWorldY = this.monster.y + 30;
+            this.shootArrow(monsterWorldX, monsterWorldY, 0.0);
+            this.shootCooldown = 25; // Continuous automatic firing every ~0.4s
+        }
 
         for (let i = this.arrows.length - 1; i >= 0; i--) {
             const arrow = this.arrows[i];

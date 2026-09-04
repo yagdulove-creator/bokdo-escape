@@ -27,21 +27,23 @@ class Monster {
         this.minionCooldown = 180;
     }
 
-    reset(startDistance = 350, stageMultiplier = 1.0, difficulty = 'NORMAL') {
+    reset(startDistance = 350, stageMultiplier = 1.0, difficulty = 'NORMAL', isMobile = false) {
         this.difficulty = difficulty;
-        let diffMult = 1.35; // Raised Normal difficulty speed!
+        this.isMobile = isMobile;
+        let diffMult = 1.10; // Balanced Normal difficulty speed!
         let dist = startDistance;
 
         if (difficulty === 'EASY') {
-            diffMult = 0.75;
-            dist = 420;
+            diffMult = 0.95; // Increased Easy speed so boss chases properly!
+            dist = 380;
         } else if (difficulty === 'HARD') {
-            diffMult = 1.85; // EXTREMELY FAST BOSS SPEED for HARD mode!
+            diffMult = 1.70; // Fast Boss speed for HARD mode!
             dist = 260;
         }
 
         this.distanceFromPlayer = dist;
-        this.baseSpeed = 2.8 * stageMultiplier * diffMult;
+        const mobileSpeedFactor = isMobile ? 0.75 : 1.0; // 25% slower on mobile
+        this.baseSpeed = 2.8 * stageMultiplier * diffMult * mobileSpeedFactor;
         this.speed = this.baseSpeed;
         this.isStunned = false;
         this.stunTimer = 0;
