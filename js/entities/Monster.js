@@ -19,15 +19,39 @@ class Monster {
         this.animTimer = 0;
         this.pulsePhase = 0;
         this.heartbeatActive = false;
+
+        this.maxHp = 800; // Significantly increased Boss HP!
+        this.hp = 800;
+        this.isDefeated = false;
+        this.fireballCooldown = 180;
+        this.minionCooldown = 180;
     }
 
-    reset(startDistance = 350, stageMultiplier = 1.0) {
-        this.distanceFromPlayer = startDistance;
-        this.baseSpeed = 2.8 * stageMultiplier;
+    reset(startDistance = 350, stageMultiplier = 1.0, difficulty = 'NORMAL') {
+        this.difficulty = difficulty;
+        let diffMult = 1.35; // Raised Normal difficulty speed!
+        let dist = startDistance;
+
+        if (difficulty === 'EASY') {
+            diffMult = 0.75;
+            dist = 420;
+        } else if (difficulty === 'HARD') {
+            diffMult = 1.85; // EXTREMELY FAST BOSS SPEED for HARD mode!
+            dist = 260;
+        }
+
+        this.distanceFromPlayer = dist;
+        this.baseSpeed = 2.8 * stageMultiplier * diffMult;
         this.speed = this.baseSpeed;
         this.isStunned = false;
         this.stunTimer = 0;
         this.heartbeatActive = false;
+
+        this.maxHp = 800;
+        this.hp = 800;
+        this.isDefeated = false;
+        this.fireballCooldown = 150;
+        this.minionCooldown = 180;
     }
 
     stun(durationFrames = 180) {
@@ -36,7 +60,46 @@ class Monster {
         audioEngine.playMonsterRoar();
     }
 
+    takeDamage(amount = 25, knockbackDist = 60) {
+        if (this.isDefeated) return;
+
+        this.hp = Math.max(0, this.hp - amount);
+        this.distanceFromPlayer += knockbackDist; // Knockback boss backwards!
+        audioEngine.playHitObstacle();
+
+        if (this.hp <= 0) {
+            this.isDefeated = true;
+            this.distanceFromPlayer = 9999; // Disappear for current stage
+            if (this.heartbeatActive) {
+                this.heartbeatActive = false;
+                audioEngine.stopHeartbeat();
+            }
+        }
+    }
+
     update(playerSpeed, isPlayerStumbling) {
+        if (this.isDefeated) return { spawnFireball: false, spawnMinion: false };
+
+        // Fireball & Minion spawn check
+        let spawnFireball = false;
+        let spawnMinion = false;
+
+        if (this.difficulty === 'NORMAL' || this.difficulty === 'HARD') {
+            this.fireballCooldown--;
+            if (this.fireballCooldown <= 0 && this.distanceFromPlayer < 650) {
+                spawnFireball = true;
+                this.fireballCooldown = (this.difficulty === 'HARD') ? 110 : 210; // HARD: 1.8s, NORMAL: 3.5s
+            }
+        }
+
+        if (this.difficulty === 'HARD') {
+            this.minionCooldown--;
+            if (this.minionCooldown <= 0 && this.distanceFromPlayer < 650) {
+                spawnMinion = true;
+                this.minionCooldown = 180; // Every 3 seconds spawn minion
+            }
+        }
+
         if (this.isStunned) {
             this.stunTimer--;
             if (this.stunTimer <= 0) {
@@ -44,17 +107,19 @@ class Monster {
             }
             // Stunned monster falls behind slightly
             this.distanceFromPlayer += 2.5;
-            return;
+            return { spawnFireball, spawnMinion };
         }
 
         // Catch-up logic:
         let catchUpRate = 0;
+        const hardMult = (this.difficulty === 'HARD') ? 1.5 : (this.difficulty === 'EASY' ? 0.8 : 1.0);
+
         if (isPlayerStumbling) {
-            catchUpRate = 1.8;
+            catchUpRate = 2.2 * hardMult;
         } else {
             // Speed comparison
             const deltaSpeed = this.speed - playerSpeed;
-            catchUpRate = deltaSpeed * 0.5;
+            catchUpRate = deltaSpeed * 0.5 * hardMult;
         }
 
         this.distanceFromPlayer -= catchUpRate;
@@ -82,9 +147,12 @@ class Monster {
                 audioEngine.stopHeartbeat();
             }
         }
+
+        return { spawnFireball, spawnMinion };
     }
 
     getBounds(playerX) {
+        if (this.isDefeated) return { x: -9999, y: -9999, width: 0, height: 0 };
         const currentX = playerX - this.distanceFromPlayer;
         return {
             x: currentX + 10,
@@ -95,6 +163,7 @@ class Monster {
     }
 
     draw(ctx, playerX, scrollX = 0) {
+        if (this.isDefeated) return;
         const worldX = playerX - this.distanceFromPlayer;
         const renderX = worldX - scrollX;
         const renderY = this.y + this.pulsePhase;

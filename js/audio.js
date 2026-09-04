@@ -118,6 +118,23 @@ class SoundEngine {
         } catch (e) {}
     }
 
+    // Sound FX: Bow Charging Tone
+    playBowCharge(chargeRatio = 0.0) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const baseFreq = 220 + chargeRatio * 480; // 220Hz -> 700Hz as charge increases
+        this.playTone(baseFreq, 'triangle', 0.08, 0.2 + chargeRatio * 0.15);
+    }
+
+    // Sound FX: Monster Fireball Attack
+    playFireballSound() {
+        if (!this.enabled) return;
+        this.playNoise(0.35, 0.45, 1200);
+        this.playTone(180, 'sawtooth', 0.3, 0.35);
+    }
+
     // Sound FX: Slide
     playSlide() {
         this.playNoise(0.2, 0.25, 600);

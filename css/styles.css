@@ -174,7 +174,7 @@ html, body {
 
 /* Stamina Bar */
 .stamina-container {
-    width: 160px;
+    width: 150px;
 }
 
 .stamina-bar {
@@ -190,6 +190,27 @@ html, body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, #ff3366, #ff9900);
+    transition: width 0.1s ease-out;
+}
+
+/* Boss HP Bar */
+.boss-hp-container {
+    width: 140px;
+}
+
+.boss-hp-bar {
+    width: 100%;
+    height: 12px;
+    background: #18081a;
+    border: 2px solid #581c87;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+#hud-boss-hp-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #a855f7, #ef4444);
     transition: width 0.1s ease-out;
 }
 
@@ -248,24 +269,92 @@ html, body {
     backdrop-filter: blur(6px);
 }
 
-/* Menu Title */
+/* Menu Screen Layout - Fixed Title Logo Visibility */
+#screen-menu {
+    justify-content: flex-start;
+    padding: 20px 20px;
+}
+
 .retro-title-box {
     text-align: center;
-    margin-bottom: 24px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    z-index: 35;
 }
 
 .game-title {
-    font-size: 52px;
+    font-size: 46px;
     color: #ffffff;
-    text-shadow: 4px 4px 0px #ff3366, -3px -3px 0px #00e5ff, 0 0 20px rgba(255, 51, 102, 0.6);
-    letter-spacing: 4px;
+    text-shadow: 4px 4px 0px #ff3366, -3px -3px 0px #00e5ff, 0 0 25px rgba(255, 51, 102, 0.8);
+    letter-spacing: 6px;
+    line-height: 1.1;
 }
 
 .game-subtitle {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--accent-yellow);
     letter-spacing: 4px;
-    margin-top: 6px;
+    margin-top: 4px;
+}
+
+/* Difficulty Selector Box */
+.difficulty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 2px solid #334155;
+}
+
+.difficulty-title {
+    font-size: 12px;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
+}
+
+.difficulty-options {
+    display: flex;
+    gap: 10px;
+}
+
+.diff-btn {
+    padding: 8px 16px;
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    color: #94a3b8;
+    background: #1e293b;
+    border: 2px solid #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.diff-btn:hover {
+    color: #ffffff;
+    border-color: var(--accent-cyan);
+}
+
+.diff-btn.active {
+    color: #ffffff;
+    background: #0284c7;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.diff-btn.hard.active {
+    background: linear-gradient(180deg, #dc2626, #991b1b);
+    border-color: #f87171;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.8);
+    animation: pulseHard 1s infinite alternate;
+}
+
+@keyframes pulseHard {
+    from { transform: scale(1); box-shadow: 0 0 10px #ef4444; }
+    to { transform: scale(1.05); box-shadow: 0 0 20px #ef4444, 0 0 30px #ff0044; }
 }
 
 .menu-actions {
@@ -550,13 +639,15 @@ html, body {
     gap: 16px;
 }
 
-/* Touch Controls - Jump Only */
+/* Touch Controls - Jump & Slide Buttons */
 #touch-controls {
     position: absolute;
-    bottom: 24px;
-    right: 24px;
+    bottom: 20px;
+    right: 20px;
     display: flex;
+    gap: 16px;
     justify-content: flex-end;
+    align-items: center;
     z-index: 28;
     pointer-events: none;
 }
@@ -569,51 +660,44 @@ html, body {
 }
 
 .touch-btn {
-    width: 64px;
-    height: 64px;
     border-radius: 50%;
-    background: rgba(27, 34, 52, 0.8);
-    border: 3px solid #3c4b6b;
     color: white;
-    font-size: 20px;
+    font-size: 13px;
     font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     touch-action: manipulation;
-}
-
-.touch-btn:active {
-    transform: scale(0.95);
-}
-
-.action-btn {
-    border-radius: 12px;
     font-family: var(--font-pixel);
 }
 
-/* Jump-only big button */
-.jump-only-btn {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    font-size: 15px;
-    background: rgba(255, 51, 102, 0.9);
+.jump-btn {
+    width: 84px;
+    height: 84px;
+    background: rgba(255, 51, 102, 0.92);
     border: 4px solid #ff7597;
-    box-shadow: 0 0 20px rgba(255,51,102,0.5), 0 6px 0 #800020;
+    box-shadow: 0 0 18px rgba(255, 51, 102, 0.6), 0 5px 0 #800020;
 }
 
-.jump-only-btn:active {
+.jump-btn:active {
     background: rgba(255, 120, 150, 1);
-    transform: scale(0.93) translateY(4px);
-    box-shadow: 0 0 10px rgba(255,51,102,0.4), 0 2px 0 #800020;
+    transform: scale(0.92) translateY(3px);
+    box-shadow: 0 0 10px rgba(255, 51, 102, 0.4), 0 2px 0 #800020;
 }
 
-.primary-touch {
-    background: rgba(255, 51, 102, 0.9);
-    border-color: #ff7597;
-    font-size: 14px;
+.slide-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(14, 165, 233, 0.92);
+    border: 4px solid #38bdf8;
+    box-shadow: 0 0 18px rgba(14, 165, 233, 0.6), 0 5px 0 #0369a1;
+}
+
+.slide-btn:active {
+    background: rgba(56, 189, 248, 1);
+    transform: scale(0.92) translateY(3px);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.4), 0 2px 0 #0369a1;
 }
 
 /* ===================== */

@@ -187,6 +187,9 @@ class PixelGraphics {
         this.drawPixelMatrix(dc.ctx, deskChairMatrix, furniturePalette, 2.5);
         this.cache['obstacle_stack'] = dc.canvas;
 
+        // --- Obstacle: High Overhead Banner (Slide Only) ---
+        this.createHighObstacleSprite();
+
         // --- Item: Soda Can / Milk Box ---
         const milkMatrix = [
             "..WW..",
@@ -256,6 +259,54 @@ class PixelGraphics {
         ctx.fillRect(64, 66, 12, 4); // Cross horizontal
 
         this.cache['safe_door'] = canvas;
+    }
+
+    createHighObstacleSprite() {
+        const { canvas, ctx } = this.createCanvas(56, 380);
+
+        // Ceiling Mount Heavy Steel Beams & Metal Frame (Stretches all the way up to ceiling!)
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(4, 0, 10, 340);
+        ctx.fillRect(42, 0, 10, 340);
+
+        // Cross Metal Braces
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 3;
+        for (let y = 20; y < 340; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(4, y);
+            ctx.lineTo(52, y + 30);
+            ctx.stroke();
+        }
+
+        // Warning Hazard Wall Box at bottom
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, 260, 56, 120);
+
+        // Yellow and Black Stripes
+        ctx.fillStyle = '#eab308';
+        for (let i = 0; i < 56; i += 16) {
+            ctx.beginPath();
+            ctx.moveTo(i, 260);
+            ctx.lineTo(i + 12, 260);
+            ctx.lineTo(i - 4, 380);
+            ctx.lineTo(i - 16, 380);
+            ctx.fill();
+        }
+
+        // Border Steel Frame
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(2, 40, 52, 335);
+
+        // Warning Icon & Text
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(8, 330, 40, 38);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px DungGeunMo, monospace';
+        ctx.fillText('▼숙이기', 6, 354);
+
+        this.cache['obstacle_high'] = canvas;
     }
 
     getSprite(name) {

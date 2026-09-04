@@ -32,6 +32,11 @@ class Obstacle {
                 this.height = 56;
                 this.spriteName = 'obstacle_stack';
                 break;
+            case 'high':
+                this.width = 56;
+                this.height = 380;
+                this.spriteName = 'obstacle_high';
+                break;
             case 'milk':
                 this.width = 24;
                 this.height = 24;

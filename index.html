@@ -47,6 +47,13 @@
                     </div>
                 </div>
 
+                <div class="hud-item boss-hp-container" id="hud-boss-container">
+                    <div class="hud-label">👹 괴물 체력 (BOSS HP)</div>
+                    <div class="boss-hp-bar">
+                        <div id="hud-boss-hp-fill"></div>
+                    </div>
+                </div>
+
                 <div class="hud-item score-badge">
                     <span class="hud-label">SCORE</span>
                     <span id="hud-score-val">00000</span>
@@ -63,9 +70,14 @@
                     <h1 class="game-title">복도탈출</h1>
                     <p class="game-subtitle">RETRO SCHOOL HALLWAY ESCAPE</p>
                 </div>
-                
-                <div class="menu-decor">
-                    <div class="pixel-art-preview"></div>
+
+                <div class="difficulty-container">
+                    <div class="difficulty-title">난이도 선택 (DIFFICULTY)</div>
+                    <div class="difficulty-options">
+                        <button class="diff-btn" data-diff="EASY">쉬움</button>
+                        <button class="diff-btn active" data-diff="NORMAL">보통 (🏹활소지)</button>
+                        <button class="diff-btn hard" data-diff="HARD">🔥 어려움 (🏹활소지)</button>
+                    </div>
                 </div>
 
                 <div class="menu-actions">
@@ -77,7 +89,7 @@
 
                 <div class="game-description">
                     <p>🏃 상쾌한 아침 학교 복도를 질주하세요!</p>
-                    <p>👹 뒤에서 쫓아오는 괴물을 피해 의자와 책상을 뛰어넘으세요!</p>
+                    <p>👹 쫓아오는 괴물을 피해 더블점프와 슬라이딩으로 장애물을 넘으세요!</p>
                     <p>🚪 각 스테이지 끝의 <span>안전구역</span>에 무사히 도착해야 합니다!</p>
                 </div>
             </div>
@@ -89,11 +101,11 @@
                     <div class="controls-grid">
                         <div class="key-row">
                             <span class="key-cap">SPACE</span> / <span class="key-cap">↑</span> / <span class="key-cap">W</span>
-                            <span class="key-desc">점프 (책상, 의자 넘기)</span>
+                            <span class="key-desc">점프 & 공중 2단 점프 (더블 점프)</span>
                         </div>
                         <div class="key-row">
                             <span class="key-cap">↓</span> / <span class="key-cap">S</span>
-                            <span class="key-desc">슬라이딩 / 빠르게 내려오기</span>
+                            <span class="key-desc">슬라이딩 (고소 장애물 통과!)</span>
                         </div>
                         <div class="key-row">
                             <span class="key-cap">←</span> / <span class="key-cap">→</span> (<span class="key-cap">A</span>/<span class="key-cap">D</span>)
@@ -105,8 +117,9 @@
                         </div>
                     </div>
                     <div class="tips-box">
-                        <p>💡 <strong>팁:</strong> 장애물에 부딪히면 속도가 느려져 괴물에게 쉽게 잡힙니다!</p>
-                        <p>💡 <strong>팁:</strong> 복도 바닥의 우유/음료수를 먹으면 체력과 대시가 회복됩니다!</p>
+                        <p>💡 <strong>팁:</strong> <strong>천장 고소 장애물(▼숙이기)</strong>은 슬라이딩으로만 통과 가능합니다!</p>
+                        <p>💡 <strong>팁:</strong> 공중에서 점프 키를 한번 더 누르면 <strong>2단 더블 점프</strong>를 할 수 있습니다!</p>
+                        <p>💡 <strong>팁:</strong> 모바일에서는 화면 우측 하단의 [점프] / [슬라이딩] 버튼을 사용하세요!</p>
                     </div>
                     <button id="btn-back-menu" class="retro-btn">메뉴로 돌아가기</button>
                 </div>
@@ -146,13 +159,13 @@
                                 </div>
                                 <button class="retro-btn buy-btn" data-item="drink" data-cost="40">40 코인</button>
                             </div>
-                            <div class="shop-item" id="shop-flashlight">
-                                <div class="item-icon">🔦</div>
+                            <div class="shop-item" id="shop-heal">
+                                <div class="item-icon">🧪</div>
                                 <div class="item-info">
-                                    <div class="item-name">섬광탄</div>
-                                    <div class="item-desc">괴물을 3초간 일시 경악 (1회용)</div>
+                                    <div class="item-name">체력 30 회복</div>
+                                    <div class="item-desc">체력을 즉시 +30 회복합니다</div>
                                 </div>
-                                <button class="retro-btn buy-btn" data-item="flash" data-cost="60">60 코인</button>
+                                <button class="retro-btn buy-btn" data-item="heal" data-cost="35">35 코인</button>
                             </div>
                         </div>
                     </div>
@@ -180,63 +193,10 @@
                 </div>
             </div>
 
-            <!-- Mobile / Touch Controls Overlay - Jump Only -->
+            <!-- Mobile / Touch Controls Overlay -->
             <div id="touch-controls">
-                <button id="touch-jump-btn" class="touch-btn action-btn primary-touch jump-only-btn">▲ 점프</button>
-            </div>
-            <!-- STAGE 1 CLEAR: Game World Warp Error Dialog -->
-            <div id="screen-game-warp" class="screen-modal hidden">
-                <!-- Fake OS Error Window -->
-                <div class="os-error-window">
-                    <div class="os-title-bar">
-                        <span class="os-title-icon">⚠️</span>
-                        <span class="os-title-text">시스템 경고 - SYSTEM WARNING</span>
-                        <div class="os-title-btns">
-                            <span class="os-win-btn">_</span>
-                            <span class="os-win-btn">□</span>
-                            <span class="os-win-btn close-btn">✕</span>
-                        </div>
-                    </div>
-                    <div class="os-body">
-                        <div class="os-icon-row">
-                            <div class="os-warn-icon">⚠</div>
-                            <div class="os-message">
-                                <p class="os-msg-main">게임속으로 들어가시겠습니까?</p>
-                                <p class="os-msg-sub">경고: 이 작업은 되돌릴 수 없습니다.<br>현실로 돌아오지 못할 수 있습니다.</p>
-                                <p class="os-msg-code">오류 코드: 0x0000GAME_DIVE_INITIATED</p>
-                            </div>
-                        </div>
-                        <div class="os-btn-row">
-                            <button id="btn-warp-yes" class="os-btn os-btn-yes">예 (Y)</button>
-                            <button id="btn-warp-no" class="os-btn os-btn-no">아니요 (N)</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VORTEX / Sucked In Screen -->
-            <div id="screen-vortex" class="screen-modal hidden">
-                <div class="vortex-container">
-                    <div class="vortex-spiral" id="vortex-spiral"></div>
-                    <div class="vortex-rings">
-                        <div class="vortex-ring ring-1"></div>
-                        <div class="vortex-ring ring-2"></div>
-                        <div class="vortex-ring ring-3"></div>
-                        <div class="vortex-ring ring-4"></div>
-                        <div class="vortex-ring ring-5"></div>
-                    </div>
-                    <p class="vortex-text" id="vortex-text">게임 세계로 진입 중...</p>
-                </div>
-            </div>
-
-            <!-- Recording Start Screen -->
-            <div id="screen-recording" class="screen-modal hidden">
-                <div class="recording-box">
-                    <div class="rec-indicator">🔴 REC</div>
-                    <h1 class="rec-main-text">여기서 부터<br>영상 찍어야 함</h1>
-                    <p class="rec-sub-text">— 복도탈출 게임 세계 진입 완료 —</p>
-                    <button id="btn-rec-continue" class="retro-btn primary glow rec-continue-btn">계속 진행하기 ▶</button>
-                </div>
+                <button id="touch-slide-btn" class="touch-btn action-btn slide-btn">▼ 슬라이드</button>
+                <button id="touch-jump-btn" class="touch-btn action-btn primary-touch jump-btn">▲ 점프</button>
             </div>
 
         </div> <!-- /ui-layer -->
@@ -248,6 +208,9 @@
     <script src="js/entities/Player.js"></script>
     <script src="js/entities/Monster.js"></script>
     <script src="js/entities/Obstacle.js"></script>
+    <script src="js/entities/Arrow.js"></script>
+    <script src="js/entities/Fireball.js"></script>
+    <script src="js/entities/Minion.js"></script>
     <script src="js/systems/Map.js"></script>
     <script src="js/systems/Physics.js"></script>
     <script src="js/systems/UI.js"></script>

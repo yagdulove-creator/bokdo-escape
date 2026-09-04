@@ -27,12 +27,16 @@ class Player {
         this.isStumbling = false;
         this.stumbleTimer = 0;
 
+        this.maxJumps = 2;
+        this.jumpCount = 0;
+
         this.jumpForce = -12.5;
         this.gravity = 0.6;
 
         this.stamina = 100;
         this.maxStamina = 100;
         this.isSprinting = false;
+        this.hasBow = false;
 
         this.animTimer = 0;
         this.animFrame = 0;
@@ -51,17 +55,34 @@ class Player {
         this.isSliding = false;
         this.isStumbling = false;
         this.stumbleTimer = 0;
+        this.jumpCount = 0;
         this.stamina = this.maxStamina;
         this.height = this.normalHeight;
     }
 
+    setBow(enabled = true) {
+        this.hasBow = enabled;
+    }
+
     jump() {
-        if (this.isGrounded && !this.isStumbling) {
+        if (this.isStumbling) return;
+
+        if (this.isGrounded) {
+            // First Jump (from ground)
             this.vy = this.jumpForce;
             this.isGrounded = false;
             this.isJumping = true;
             this.isSliding = false;
             this.height = this.normalHeight;
+            this.jumpCount = 1;
+            audioEngine.playJump();
+        } else if (this.jumpCount < this.maxJumps) {
+            // Air / Double Jump
+            this.vy = this.jumpForce * 0.95;
+            this.isJumping = true;
+            this.isSliding = false;
+            this.height = this.normalHeight;
+            this.jumpCount = 2;
             audioEngine.playJump();
         }
     }
@@ -114,9 +135,7 @@ class Player {
         } else {
             this.isSprinting = false;
             this.speedMultiplier = 1.0;
-            if (this.stamina < this.maxStamina) {
-                this.stamina = Math.min(this.maxStamina, this.stamina + 0.2);
-            }
+            // Note: Automatic stamina regeneration disabled per user request!
         }
 
         // Left / Right Speed adjustment
@@ -138,6 +157,7 @@ class Player {
                 this.vy = 0;
                 this.isGrounded = true;
                 this.isJumping = false;
+                this.jumpCount = 0;
                 audioEngine.playFootstep();
             }
         }
@@ -187,11 +207,63 @@ class Player {
                 ctx.globalAlpha = (Math.floor(Date.now() / 80) % 2 === 0) ? 0.5 : 1.0;
             }
             ctx.drawImage(sprite, screenX, this.y, this.width, this.height);
+
+            // Draw Bow on player when equipped (NORMAL/HARD difficulty)
+            if (this.hasBow) {
+                ctx.strokeStyle = '#b45309';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                // Curved wooden bow string & arc
+                ctx.arc(screenX + 22, this.y + 24, 14, -Math.PI * 0.45, Math.PI * 0.45);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(screenX + 22 + 14 * Math.cos(-Math.PI * 0.45), this.y + 24 + 14 * Math.sin(-Math.PI * 0.45));
+                ctx.lineTo(screenX + 22 + 14 * Math.cos(Math.PI * 0.45), this.y + 24 + 14 * Math.sin(Math.PI * 0.45));
+                ctx.stroke();
+            }
+
             ctx.restore();
         } else {
             // Fallback rectangle
             ctx.fillStyle = '#ff3366';
             ctx.fillRect(screenX, this.y, this.width, this.height);
         }
+    }
+
+    drawChargeGauge(ctx, scrollX, chargeRatio) {
+        if (chargeRatio <= 0 || !this.hasBow) return;
+
+        const screenX = this.x - scrollX;
+        const barX = screenX - 4;
+        const barY = this.y - 20;
+        const barW = 44;
+        const barH = 8;
+        const pct = Math.min(1.0, Math.max(0, chargeRatio));
+
+        ctx.save();
+
+        // Dark background box
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.strokeStyle = (pct >= 1.0) ? '#ffcc00' : '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(barX, barY, barW, barH);
+
+        // Fill progress bar
+        const fillW = Math.max(0, (barW - 2) * pct);
+        ctx.fillStyle = (pct >= 1.0) ? '#ef4444' : ((pct > 0.5) ? '#fbbf24' : '#38bdf8');
+        ctx.fillRect(barX + 1, barY + 1, fillW, barH - 2);
+
+        // Text display above bar
+        ctx.font = 'bold 8px DungGeunMo, monospace';
+        ctx.fillStyle = (pct >= 1.0) ? '#ffcc00' : '#ffffff';
+        ctx.textAlign = 'center';
+        const pctText = (pct >= 1.0) ? '100% MAX!' : `${Math.floor(pct * 100)}%`;
+        ctx.fillText(pctText, screenX + 18, barY - 3);
+
+        ctx.restore();
     }
 }

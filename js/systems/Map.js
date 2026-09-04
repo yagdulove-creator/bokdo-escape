@@ -58,20 +58,23 @@ class Map {
             const typeRoll = Math.random();
             let obsType = 'desk';
 
-            if (typeRoll < 0.4) {
+            if (typeRoll < 0.3) {
                 obsType = 'desk';
-            } else if (typeRoll < 0.7) {
+            } else if (typeRoll < 0.55) {
                 obsType = 'chair';
-            } else if (typeRoll < 0.85 && stageNum >= 2) {
+            } else if (typeRoll < 0.75) {
+                obsType = 'high'; // Overhead obstacle requiring sliding
+            } else if (typeRoll < 0.9 && stageNum >= 2) {
                 obsType = 'stack'; // Higher stack appears from stage 2
             } else {
                 obsType = 'desk';
             }
 
-            // Spawn obstacle Y position so feet rest on ground
+            // Spawn obstacle Y position so feet rest on ground or hangs overhead
             let spawnY = this.groundY - 36;
             if (obsType === 'chair') spawnY = this.groundY - 34;
             if (obsType === 'stack') spawnY = this.groundY - 56;
+            if (obsType === 'high') spawnY = 0; // Starts from ceiling Y=0 down to Y=380 (blocks double jump!)
 
             const obstacle = new Obstacle(obsType, obsX, spawnY);
             this.obstacles.push(obstacle);

@@ -12,6 +12,8 @@ class UI {
         this.hudPlayerIcon = document.getElementById('hud-player-icon');
         this.hudMonsterIcon = document.getElementById('hud-monster-icon');
         this.hudStaminaFill = document.getElementById('hud-stamina-fill');
+        this.hudBossContainer = document.getElementById('hud-boss-container');
+        this.hudBossHpFill = document.getElementById('hud-boss-hp-fill');
         this.hudScoreVal = document.getElementById('hud-score-val');
 
         this.monsterVignette = document.getElementById('monster-warning-vignette');
@@ -22,9 +24,6 @@ class UI {
         this.screenHowto = document.getElementById('screen-howto');
         this.screenSafezone = document.getElementById('screen-safezone');
         this.screenGameover = document.getElementById('screen-gameover');
-        this.screenGameWarp = document.getElementById('screen-game-warp');
-        this.screenVortex = document.getElementById('screen-vortex');
-        this.screenRecording = document.getElementById('screen-recording');
         this.touchControls = document.getElementById('touch-controls');
 
         // Safe Zone Shop DOMs
@@ -47,6 +46,16 @@ class UI {
         }
     }
 
+    setDifficultyUI(selectedDiff) {
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            if (btn.getAttribute('data-diff') === selectedDiff) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
     setTouchControls(visible) {
         if (this.touchControls) {
             if (visible) {
@@ -58,11 +67,9 @@ class UI {
     }
 
     showScreen(screenName) {
-        // Hide all screens (including new ones)
+        // Hide all screens
         const allScreens = [
-            this.screenMenu, this.screenHowto, this.screenSafezone,
-            this.screenGameover, this.screenGameWarp, this.screenVortex,
-            this.screenRecording
+            this.screenMenu, this.screenHowto, this.screenSafezone, this.screenGameover
         ];
         allScreens.forEach(s => { if(s) { s.classList.add('hidden'); s.classList.remove('active'); } });
 
@@ -83,20 +90,10 @@ class UI {
             this.hudPanel.classList.add('hidden');
         } else if (screenName === 'PLAYING') {
             this.hudPanel.classList.remove('hidden');
-        } else if (screenName === 'GAME_WARP') {
-            this.screenGameWarp.classList.remove('hidden');
-            this.screenGameWarp.classList.add('active');
-            this.hudPanel.classList.add('hidden');
-        } else if (screenName === 'VORTEX') {
-            this.screenVortex.classList.remove('hidden');
-            this.screenVortex.classList.add('active');
-        } else if (screenName === 'RECORDING') {
-            this.screenRecording.classList.remove('hidden');
-            this.screenRecording.classList.add('active');
         }
     }
 
-    updateHUD(stage, distanceMeters, maxDistanceMeters, playerX, monsterDist, stamina, maxStamina, score) {
+    updateHUD(stage, distanceMeters, maxDistanceMeters, playerX, monsterDist, stamina, maxStamina, score, monsterHp = 100, maxMonsterHp = 100, difficulty = 'NORMAL', isMonsterDefeated = false) {
         this.hudStageVal.textContent = `1-${stage}`;
         
         const metersLeft = Math.max(0, Math.floor(distanceMeters));
@@ -108,18 +105,32 @@ class UI {
         this.hudPlayerIcon.style.left = `${progressPct}%`;
 
         // Monster Icon position relative to player
-        const monsterPct = Math.max(0, progressPct - (monsterDist / (maxDistanceMeters * 8)) * 100);
-        this.hudMonsterIcon.style.left = `${monsterPct}%`;
+        if (isMonsterDefeated) {
+            this.hudMonsterIcon.style.display = 'none';
+        } else {
+            this.hudMonsterIcon.style.display = 'block';
+            const monsterPct = Math.max(0, progressPct - (monsterDist / (maxDistanceMeters * 8)) * 100);
+            this.hudMonsterIcon.style.left = `${monsterPct}%`;
+        }
 
         // Stamina bar
         const staminaPct = Math.min(100, Math.max(0, (stamina / maxStamina) * 100));
         this.hudStaminaFill.style.width = `${staminaPct}%`;
 
+        // Boss HP Bar (Visible in NORMAL and HARD difficulties)
+        if ((difficulty === 'NORMAL' || difficulty === 'HARD') && !isMonsterDefeated) {
+            if (this.hudBossContainer) this.hudBossContainer.classList.remove('hidden');
+            const bossHpPct = Math.min(100, Math.max(0, (monsterHp / maxMonsterHp) * 100));
+            if (this.hudBossHpFill) this.hudBossHpFill.style.width = `${bossHpPct}%`;
+        } else {
+            if (this.hudBossContainer) this.hudBossContainer.classList.add('hidden');
+        }
+
         // Score
         this.hudScoreVal.textContent = String(Math.floor(score)).padStart(5, '0');
 
         // Monster Warning Vignette
-        const proximity = Math.max(0, 400 - monsterDist);
+        const proximity = isMonsterDefeated ? 0 : Math.max(0, 400 - monsterDist);
         if (proximity > 100) {
             const intensity = Math.min(60, (proximity / 400) * 60);
             this.monsterVignette.style.boxShadow = `inset 0 0 ${intensity + 20}px rgba(255, 0, 50, ${intensity / 60})`;
