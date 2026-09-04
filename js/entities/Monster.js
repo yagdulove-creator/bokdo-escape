@@ -30,7 +30,7 @@ class Monster {
     reset(startDistance = 350, stageMultiplier = 1.0, difficulty = 'NORMAL', isMobile = false) {
         this.difficulty = difficulty;
         this.isMobile = isMobile;
-        let diffMult = 1.10; // Balanced Normal difficulty speed!
+        let diffMult = 1.35; // Restored Normal difficulty speed to original!
         let dist = startDistance;
 
         if (difficulty === 'EASY') {
