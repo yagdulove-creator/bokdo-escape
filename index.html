@@ -196,6 +196,52 @@
                 </div>
             </div>
 
+            <!-- Easy Mode Stage Clear Error Prompt Modal -->
+            <div id="screen-easy-prompt" class="screen-modal hidden">
+                <div class="os-error-window">
+                    <div class="os-title-bar">
+                        <span class="os-title-icon">⚠️</span>
+                        <span class="os-title-text">SYSTEM ALERT - STAGE CLEAR</span>
+                        <div class="os-title-btns">
+                            <span class="os-win-btn">?</span>
+                            <span class="os-win-btn">X</span>
+                        </div>
+                    </div>
+                    <div class="os-body">
+                        <div class="os-icon-row">
+                            <div class="os-warn-icon">👾</div>
+                            <div class="os-message">
+                                <div class="os-msg-main">게임속으로 들어가시겠습니까?</div>
+                                <div class="os-msg-sub">
+                                    쉬움 난이도 스테이지 클리어!<br>
+                                    [예]를 클릭하면 차원의 문을 통해 게임 속으로 빨려 들어갑니다.
+                                </div>
+                                <div class="os-msg-code">ERROR_CODE: WARP_PORTAL_DETECTED_0x88</div>
+                            </div>
+                        </div>
+                        <div class="os-btn-row">
+                            <button id="btn-easy-yes" class="os-btn os-btn-yes">예 (YES)</button>
+                            <button id="btn-easy-no" class="os-btn os-btn-no">아니오</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vortex / Warp Sucked-in Effect Screen -->
+            <div id="screen-vortex" class="screen-modal hidden">
+                <div class="vortex-container vortex-suck-anim">
+                    <div class="vortex-rings">
+                        <div class="vortex-ring ring-1"></div>
+                        <div class="vortex-ring ring-2"></div>
+                        <div class="vortex-ring ring-3"></div>
+                        <div class="vortex-ring ring-4"></div>
+                        <div class="vortex-ring ring-5"></div>
+                    </div>
+                    <div class="vortex-spiral"></div>
+                    <div class="vortex-text">🌀 게임 속으로 빨려 들어가는 중... 🌀</div>
+                </div>
+            </div>
+
             <!-- Mobile / Touch Controls Overlay -->
             <div id="touch-controls">
                 <button id="touch-slide-btn" class="touch-btn action-btn slide-btn">▼ 슬라이드</button>

@@ -266,6 +266,35 @@ class Game {
         });
         document.getElementById('btn-menu').addEventListener('click', () => this.ui.showScreen('MENU'));
 
+        // Easy Mode Prompt Buttons
+        const btnEasyYes = document.getElementById('btn-easy-yes');
+        if (btnEasyYes) {
+            btnEasyYes.addEventListener('click', () => {
+                audioEngine.init();
+                audioEngine.playWarpSound();
+                this.state = 'VORTEX';
+                this.ui.showScreen('VORTEX');
+
+                setTimeout(() => {
+                    audioEngine.playSafeZoneArrival();
+                    this.state = 'SAFEZONE';
+                    this.ui.populateSafeZone(this.stage, this.score, this.coins);
+                    this.ui.showScreen('SAFEZONE');
+                }, 2500);
+            });
+        }
+
+        const btnEasyNo = document.getElementById('btn-easy-no');
+        if (btnEasyNo) {
+            btnEasyNo.addEventListener('click', () => {
+                audioEngine.init();
+                audioEngine.playSafeZoneArrival();
+                this.state = 'SAFEZONE';
+                this.ui.populateSafeZone(this.stage, this.score, this.coins);
+                this.ui.showScreen('SAFEZONE');
+            });
+        }
+
         // Shop Buttons
         document.querySelectorAll('.buy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -544,13 +573,18 @@ class Game {
     reachSafeZone() {
         audioEngine.stopHeartbeat();
         audioEngine.stopBGM();
-        audioEngine.playSafeZoneArrival();
         this.coins += 50;
         this.ui.setTouchControls(false);
 
-        this.state = 'SAFEZONE';
-        this.ui.populateSafeZone(this.stage, this.score, this.coins);
-        this.ui.showScreen('SAFEZONE');
+        if (this.difficulty === 'EASY') {
+            this.state = 'EASY_PROMPT';
+            this.ui.showScreen('EASY_PROMPT');
+        } else {
+            audioEngine.playSafeZoneArrival();
+            this.state = 'SAFEZONE';
+            this.ui.populateSafeZone(this.stage, this.score, this.coins);
+            this.ui.showScreen('SAFEZONE');
+        }
     }
 
     gameOver() {

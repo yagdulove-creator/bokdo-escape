@@ -24,6 +24,8 @@ class UI {
         this.screenHowto = document.getElementById('screen-howto');
         this.screenSafezone = document.getElementById('screen-safezone');
         this.screenGameover = document.getElementById('screen-gameover');
+        this.screenEasyPrompt = document.getElementById('screen-easy-prompt');
+        this.screenVortex = document.getElementById('screen-vortex');
         this.touchControls = document.getElementById('touch-controls');
 
         // Safe Zone Shop DOMs
@@ -69,7 +71,7 @@ class UI {
     showScreen(screenName) {
         // Hide all screens
         const allScreens = [
-            this.screenMenu, this.screenHowto, this.screenSafezone, this.screenGameover
+            this.screenMenu, this.screenHowto, this.screenSafezone, this.screenGameover, this.screenEasyPrompt, this.screenVortex
         ];
         allScreens.forEach(s => { if(s) { s.classList.add('hidden'); s.classList.remove('active'); } });
 
@@ -87,6 +89,25 @@ class UI {
         } else if (screenName === 'GAMEOVER') {
             this.screenGameover.classList.remove('hidden');
             this.screenGameover.classList.add('active');
+            this.hudPanel.classList.add('hidden');
+        } else if (screenName === 'EASY_PROMPT') {
+            if (this.screenEasyPrompt) {
+                this.screenEasyPrompt.classList.remove('hidden');
+                this.screenEasyPrompt.classList.add('active');
+            }
+            this.hudPanel.classList.add('hidden');
+        } else if (screenName === 'VORTEX') {
+            if (this.screenVortex) {
+                this.screenVortex.classList.remove('hidden');
+                this.screenVortex.classList.add('active');
+                // Restart animation if needed
+                const vortexBox = this.screenVortex.querySelector('.vortex-container');
+                if (vortexBox) {
+                    vortexBox.classList.remove('vortex-suck-anim');
+                    void vortexBox.offsetWidth; // trigger reflow
+                    vortexBox.classList.add('vortex-suck-anim');
+                }
+            }
             this.hudPanel.classList.add('hidden');
         } else if (screenName === 'PLAYING') {
             this.hudPanel.classList.remove('hidden');
